@@ -16,7 +16,9 @@ const Joi = require("joi")
         maxlength: 255,
         unique : true
       },
-
+      phone:{
+        type : Number
+      },
       password: {
         type: String,
         required: true,
@@ -30,6 +32,7 @@ function validateRequest(user) {
     const schema = {
         name: Joi.string().min(3).required(),
         email: Joi.string().min(3).max(255).required().email(),
+        phone: Joi.string().min(11).max(11).required(),
         password: Joi.string().min(5).max(1112255).required(),
       };
     

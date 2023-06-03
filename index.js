@@ -4,11 +4,13 @@ const mongoose =  require('mongoose')
 const group = require('./routes/groups');
 const user = require('./routes/users');
 const express = require('express');
+const authenticate = require('./middleware/authenticate')
 const app = express();
 
 
 app.use(express.json());
 app.use('/api/user', user);
+app.use(authenticate)
 app.use('/api/group', group);
 
 

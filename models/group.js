@@ -17,7 +17,7 @@ const Group = mongoose.model('group', mongoose.Schema({
       },
     members :[{
         type: mongoose.Schema.Types.ObjectId,
-        ref :"user"
+        ref : "user"
     }],
     messages :{
         type: Array

@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt')
 const lodash = require('lodash')
-const mongoose =  require('mongoose')
+const jwt = require('jsonwebtoken')
 const {User, validate} = require('../models/user')
 
 const createUser =  (req , res) => {
@@ -17,25 +17,71 @@ const createUser =  (req , res) => {
    })
    
  
-  let user = new User ({
-        name : req.body.name,
-        email : req.body.email,
-        password : req.body.password,
-   })
-
-   bcrypt.genSalt(10).then((salt) => {
-    return bcrypt.hash(user.password, salt);
-  }).then((hashedPassword) => {
-    user.password = hashedPassword;
+   bcrypt.hash(req.body.password, 10 , function(err, hashedPass) {
+    if (err) {
+       res.json({
+        error :err
+       })
+    }
+    let user = new User ({
+        name:req.body.name,
+        email:req.body.email,
+        phone : req.body.phone,
+        password:hashedPass
+    })
     user.save()
-     return res.send(lodash.pick( user, ['id', 'name' , 'email',]));
-  }).then((savedUser) => {
-    // Handle the saved user or send a response
-  }).catch((error) => {
-    // Handle the error
-  });
+    .then ( result => {
+            res.json({
+                message :"User Added Sucessfully"
+            })
+    })
+    .catch(err => {
+        res.json({
+            error : "An Error Occured"
+        })
+    })
+})
 }
 
+const login = (req, res, next) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  User.findOne({ email: email })
+    .then((user) => {
+      if (user) {
+        bcrypt.compare(password, user.password, function (err, result) {
+          if (err) {
+            res.json({
+              error: err,
+            });
+          }
+          if (result) {
+            const token = jwt.sign({ _id: user._id}, 'A(56LDr', { expiresIn: '1h' });
+            res.json({
+              message: "Login Successful",
+              token: token,
+            });
+          } else {
+            res.json({
+              message: "Invalid password",
+            });
+          }
+        });
+      } else {
+        res.json({
+          message: "No User Found",
+        });
+      }
+    })
+    .catch((err) => {
+      res.json({
+        error: "Invalid Credentials",
+      });
+    });
+};
+
 module.exports = {
-    createUser
+    createUser,
+    login
 }
